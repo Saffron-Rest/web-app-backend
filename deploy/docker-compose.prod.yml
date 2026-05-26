@@ -1,0 +1,52 @@
+# Storefront API — talks to web-app-postgres on the private web-app_db network,
+# and exposes itself on saffron_net so Kong can route /api at shop.saffron.waw.pl.
+name: web-app-backend
+
+services:
+  api:
+    image: ${BACKEND_IMAGE:?set BACKEND_IMAGE}
+    container_name: saffron-web-app-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      STOREFRONT_DB_URL: jdbc:postgresql://web-app-postgres:5432/${WEBAPP_DB_NAME:-storefront}
+      STOREFRONT_DB_USER: ${WEBAPP_DB_USER:-storefront}
+      STOREFRONT_DB_PASSWORD: ${WEBAPP_DB_PASSWORD:?set WEBAPP_DB_PASSWORD}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Warsaw}
+      STOREFRONT_CURRENCY: ${STOREFRONT_CURRENCY:-PLN}
+      STOREFRONT_PUBLIC_URL: ${STOREFRONT_PUBLIC_URL:-http://shop.saffron.waw.pl}
+      STOREFRONT_CORS_ORIGINS: ${STOREFRONT_CORS_ORIGINS:-*}
+      STOREFRONT_PICKUP_NAME: ${STOREFRONT_PICKUP_NAME:-Saffron Restaurant}
+      STOREFRONT_PICKUP_ADDRESS: ${STOREFRONT_PICKUP_ADDRESS:-ul. Marszałkowska 1, 00-624 Warszawa, Poland}
+      STOREFRONT_PICKUP_LAT: ${STOREFRONT_PICKUP_LAT:-52.229676}
+      STOREFRONT_PICKUP_LNG: ${STOREFRONT_PICKUP_LNG:-21.012229}
+      STOREFRONT_PICKUP_PHONE: ${STOREFRONT_PICKUP_PHONE:-+48 22 000 0000}
+      WOLT_DRIVE_ENABLED: ${WOLT_DRIVE_ENABLED:-false}
+      WOLT_DRIVE_MERCHANT_ID: ${WOLT_DRIVE_MERCHANT_ID:-}
+      WOLT_DRIVE_API_KEY: ${WOLT_DRIVE_API_KEY:-}
+      GLOVO_COURIER_ENABLED: ${GLOVO_COURIER_ENABLED:-false}
+      GLOVO_COURIER_API_KEY: ${GLOVO_COURIER_API_KEY:-}
+      DHL_EXPRESS_ENABLED: ${DHL_EXPRESS_ENABLED:-false}
+      DHL_EXPRESS_API_KEY: ${DHL_EXPRESS_API_KEY:-}
+      DHL_EXPRESS_API_SECRET: ${DHL_EXPRESS_API_SECRET:-}
+      DHL_EXPRESS_ACCOUNT: ${DHL_EXPRESS_ACCOUNT:-}
+      DPD_PL_ENABLED: ${DPD_PL_ENABLED:-false}
+      DPD_PL_LOGIN: ${DPD_PL_LOGIN:-}
+      DPD_PL_PASSWORD: ${DPD_PL_PASSWORD:-}
+      DPD_PL_FID: ${DPD_PL_FID:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    expose:
+      - "3002"
+    networks:
+      - saffron_net
+      - web-app_db
+
+networks:
+  saffron_net:
+    name: saffron_net
+    external: true
+  web-app_db:
+    name: web-app_db
+    external: true
