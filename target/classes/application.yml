@@ -1,0 +1,86 @@
+server:
+  port: 3002
+
+spring:
+  application:
+    name: saffron-storefront-api
+  datasource:
+    url: ${STOREFRONT_DB_URL:jdbc:postgresql://localhost:5432/storefront}
+    username: ${STOREFRONT_DB_USER:saffron}
+    password: ${STOREFRONT_DB_PASSWORD:saffron}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+app:
+  timezone: ${APP_TIMEZONE:Europe/Warsaw}
+  currency: ${STOREFRONT_CURRENCY:PLN}
+  # Pickup venue used as the origin for every instant delivery quote.
+  # Get the lat/lng from Google Maps "What's here?" on your restaurant address.
+  pickup:
+    name: ${STOREFRONT_PICKUP_NAME:Saffron Restaurant}
+    address: ${STOREFRONT_PICKUP_ADDRESS:ul. Example 1, 00-001 Warszawa, Poland}
+    lat: ${STOREFRONT_PICKUP_LAT:52.229676}
+    lng: ${STOREFRONT_PICKUP_LNG:21.012229}
+    phone: ${STOREFRONT_PICKUP_PHONE:+48 000 000 000}
+    country: ${STOREFRONT_PICKUP_COUNTRY:PL}
+
+  # === Delivery / shipping carrier credentials ===
+  # Each adapter falls back to a deterministic mock quote (distance-based) when its
+  # credentials are missing — so the storefront works end-to-end before B2B keys are
+  # issued, and quotes become "live" automatically as soon as keys are configured.
+  wolt:
+    drive:
+      enabled: ${WOLT_DRIVE_ENABLED:false}
+      base-url: ${WOLT_DRIVE_BASE_URL:https://daas-public-api.wolt.com}
+      merchant-id: ${WOLT_DRIVE_MERCHANT_ID:}
+      api-key: ${WOLT_DRIVE_API_KEY:}
+  glovo:
+    courier:
+      enabled: ${GLOVO_COURIER_ENABLED:false}
+      base-url: ${GLOVO_COURIER_BASE_URL:https://api.glovoapp.com}
+      api-key: ${GLOVO_COURIER_API_KEY:}
+  dhl:
+    express:
+      enabled: ${DHL_EXPRESS_ENABLED:false}
+      base-url: ${DHL_EXPRESS_BASE_URL:https://express.api.dhl.com/mydhlapi}
+      api-key: ${DHL_EXPRESS_API_KEY:}
+      api-secret: ${DHL_EXPRESS_API_SECRET:}
+      account: ${DHL_EXPRESS_ACCOUNT:}
+  dpd:
+    polska:
+      enabled: ${DPD_PL_ENABLED:false}
+      base-url: ${DPD_PL_BASE_URL:https://api.dpd.com.pl}
+      login: ${DPD_PL_LOGIN:}
+      password: ${DPD_PL_PASSWORD:}
+      fid: ${DPD_PL_FID:}
+
+  # Stripe (used by /api/orders/{ref}/checkout to mint a Checkout Session URL).
+  # When secret-key is blank, /checkout returns a local mock URL so the full flow
+  # works end-to-end without any Stripe account configured.
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    success-url: ${STRIPE_SUCCESS_URL:http://localhost:5174/order/{REF}?paid=1}
+    cancel-url: ${STRIPE_CANCEL_URL:http://localhost:5174/checkout?canceled=1}
+    # Public storefront base URL used to build the mock-payment fallback URL.
+    public-base-url: ${STOREFRONT_PUBLIC_URL:http://localhost:5174}
+
+  # Demo-mode delivery progression. With real carrier webhooks, this scheduler
+  # becomes a no-op (set enabled=false). Times are in seconds *from PAID*.
+  delivery:
+    progression:
+      enabled: ${DELIVERY_DEMO_PROGRESSION:true}
+      preparing-after-seconds: ${DELIVERY_DEMO_PREPARING:5}
+      ready-after-seconds: ${DELIVERY_DEMO_READY:25}
+      out-after-seconds: ${DELIVERY_DEMO_OUT:35}
+      delivered-after-seconds: ${DELIVERY_DEMO_DELIVERED:90}
+
+  cors:
+    allowed-origins: ${STOREFRONT_CORS_ORIGINS:http://localhost:5174,http://localhost:5173,http://127.0.0.1:5174,http://127.0.0.1:5173}
