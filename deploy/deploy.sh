@@ -10,13 +10,29 @@ if [[ -z "${REGISTRY_PASSWORD:-}" || -z "${REGISTRY_USER:-}" ]]; then
 fi
 echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin "$REGISTRY_HOST"
 
+# Auto-generate a JWT secret on first run so admin auth is never seeded with the
+# dev default. Persists in a sibling file alongside .env so it survives redeploys.
+JWT_SECRET_FILE="$APP_DIR/.jwt-secret"
+if [[ -z "${STOREFRONT_JWT_SECRET:-}" ]]; then
+  if [[ ! -s "$JWT_SECRET_FILE" ]]; then
+    head -c 48 /dev/urandom | base64 | tr -d '\n=+/' > "$JWT_SECRET_FILE"
+    chmod 600 "$JWT_SECRET_FILE"
+  fi
+  STOREFRONT_JWT_SECRET="$(cat "$JWT_SECRET_FILE")"
+fi
+
 cat > .env <<EOF
 BACKEND_IMAGE=${BACKEND_IMAGE:?BACKEND_IMAGE required}
 WEBAPP_DB_USER=${WEBAPP_DB_USER:-storefront}
 WEBAPP_DB_PASSWORD=${WEBAPP_DB_PASSWORD:?WEBAPP_DB_PASSWORD required}
 WEBAPP_DB_NAME=${WEBAPP_DB_NAME:-storefront}
-STOREFRONT_PUBLIC_URL=${STOREFRONT_PUBLIC_URL:-http://shop.saffron.waw.pl}
-STOREFRONT_CORS_ORIGINS=${STOREFRONT_CORS_ORIGINS:-*}
+STOREFRONT_PUBLIC_URL=${STOREFRONT_PUBLIC_URL:-https://shop.saffron.waw.pl}
+STOREFRONT_CORS_ORIGINS=${STOREFRONT_CORS_ORIGINS:-https://shop.saffron.waw.pl}
+STOREFRONT_JWT_SECRET=$STOREFRONT_JWT_SECRET
+STOREFRONT_JWT_EXPIRATION_MS=${STOREFRONT_JWT_EXPIRATION_MS:-86400000}
+STOREFRONT_ADMIN_EMAIL=${STOREFRONT_ADMIN_EMAIL:-admin@saffron.waw.pl}
+STOREFRONT_ADMIN_PASSWORD=${STOREFRONT_ADMIN_PASSWORD:-}
+STOREFRONT_ADMIN_NAME=${STOREFRONT_ADMIN_NAME:-Saffron Admin}
 WOLT_DRIVE_ENABLED=${WOLT_DRIVE_ENABLED:-false}
 WOLT_DRIVE_MERCHANT_ID=${WOLT_DRIVE_MERCHANT_ID:-}
 WOLT_DRIVE_API_KEY=${WOLT_DRIVE_API_KEY:-}
@@ -38,6 +54,10 @@ chmod 600 .env
 
 docker network inspect saffron_net  >/dev/null 2>&1 || docker network create saffron_net
 docker network inspect web-app_db   >/dev/null 2>&1 || docker network create web-app_db
+
+# Persistent volume for admin-uploaded product images. Lives alongside other
+# saffron volumes so backups can scoop the lot up.
+docker volume inspect web-app_uploads >/dev/null 2>&1 || docker volume create web-app_uploads
 
 docker compose -f docker-compose.prod.yml --env-file .env pull
 docker compose -f docker-compose.prod.yml --env-file .env up -d --remove-orphans

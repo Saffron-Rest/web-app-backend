@@ -11,6 +11,12 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
     Optional<Product> findBySlug(String slug);
 
+    boolean existsBySlugAndIdNot(String slug, String id);
+
+    boolean existsBySlug(String slug);
+
+    List<Product> findAllByOrderByCategoryAscSortOrderAscNamePlAsc();
+
     List<Product> findByActiveTrueOrderByCategoryAscSortOrderAscNamePlAsc();
 
     List<Product> findByActiveTrueAndAvailableInstantTrueOrderByCategoryAscSortOrderAsc();

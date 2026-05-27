@@ -16,6 +16,10 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 8MB
 
 app:
   timezone: ${APP_TIMEZONE:Europe/Warsaw}
@@ -84,3 +88,24 @@ app:
 
   cors:
     allowed-origins: ${STOREFRONT_CORS_ORIGINS:http://localhost:5174,http://localhost:5173,http://127.0.0.1:5174,http://127.0.0.1:5173}
+
+  # JWT for admin authentication. In production STOREFRONT_JWT_SECRET MUST be set to
+  # a random, >=32-character string. The default below is dev-only and refuses to start
+  # in prod (see JwtService constructor).
+  jwt:
+    secret: ${STOREFRONT_JWT_SECRET:dev-only-secret-please-change-me-now-32chars}
+    expiration-ms: ${STOREFRONT_JWT_EXPIRATION_MS:86400000}
+
+  # Where product images get written. In dev this is a relative path; in production we
+  # mount /data/uploads from a Docker volume so files survive container redeploys.
+  uploads:
+    dir: ${STOREFRONT_UPLOADS_DIR:./uploads}
+
+  # First-run admin bootstrap. If no AdminUser exists when the app starts and both
+  # email + password are set, we create the initial admin. The password may also be
+  # generated automatically — see AdminBootstrap logs in that case.
+  admin:
+    bootstrap:
+      email: ${STOREFRONT_ADMIN_EMAIL:admin@saffron.local}
+      password: ${STOREFRONT_ADMIN_PASSWORD:}
+      name: ${STOREFRONT_ADMIN_NAME:Saffron Admin}
