@@ -34,7 +34,7 @@ public class AdminReservationService {
         LocalDate fromD = parseDate(from);
         LocalDate toD = parseDate(to);
         Page<Reservation> p = repo.search(status, fromD, toD,
-                (q == null || q.isBlank()) ? null : q.trim(),
+                (q == null || q.isBlank()) ? "" : q.trim(),
                 PageRequest.of(Math.max(0, page), Math.max(1, Math.min(size, 200))));
         List<Map<String, Object>> items = p.getContent().stream().map(AdminReservationService::toMap).toList();
         Map<String, Object> body = new LinkedHashMap<>();

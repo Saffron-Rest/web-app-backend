@@ -37,9 +37,10 @@ public class AdminOrderService {
     @Transactional(readOnly = true)
     public Map<String, Object> list(String statusStr, String query, int page, int size) {
         OrderStatus status = parseStatus(statusStr);
+        // Empty string = "no filter" — see CustomerOrderRepository for the rationale.
         Page<CustomerOrder> p = orders.searchOrders(
                 status,
-                (query == null || query.isBlank()) ? null : query.trim(),
+                (query == null || query.isBlank()) ? "" : query.trim(),
                 PageRequest.of(Math.max(0, page), Math.max(1, Math.min(size, 200))));
         List<Map<String, Object>> items = p.getContent().stream().map(AdminOrderService::summary).toList();
         Map<String, Object> body = new LinkedHashMap<>();

@@ -28,13 +28,18 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, St
 
     long countByCreatedAtAfter(Instant after);
 
+    // NOTE on the :q parameter — we pass an empty string ("") to mean "no filter"
+    // rather than NULL. PostgreSQL's JDBC binding can't infer the type of a NULL
+    // String inside `LOWER(CONCAT('%', :q, '%'))` and falls back to bytea, which
+    // then fails with `function lower(bytea) does not exist`. With a non-null
+    // string the parameter is bound as varchar and the planner is happy.
     @Query("""
         SELECT o FROM CustomerOrder o
         WHERE (:status IS NULL OR o.status = :status)
-          AND (:q IS NULL OR LOWER(o.reference)    LIKE LOWER(CONCAT('%', :q, '%'))
-                           OR LOWER(o.contactEmail) LIKE LOWER(CONCAT('%', :q, '%'))
-                           OR LOWER(o.contactName)  LIKE LOWER(CONCAT('%', :q, '%'))
-                           OR o.contactPhone        LIKE CONCAT('%', :q, '%'))
+          AND (:q = '' OR LOWER(o.reference)    LIKE LOWER(CONCAT('%', :q, '%'))
+                       OR LOWER(o.contactEmail) LIKE LOWER(CONCAT('%', :q, '%'))
+                       OR LOWER(o.contactName)  LIKE LOWER(CONCAT('%', :q, '%'))
+                       OR o.contactPhone        LIKE CONCAT('%', :q, '%'))
         ORDER BY o.createdAt DESC
     """)
     Page<CustomerOrder> searchOrders(@Param("status") OrderStatus status,
@@ -50,9 +55,9 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, St
             MAX(o.createdAt),
             COALESCE(SUM(o.total), 0))
         FROM CustomerOrder o
-        WHERE (:q IS NULL OR LOWER(o.contactEmail) LIKE LOWER(CONCAT('%', :q, '%'))
-                          OR LOWER(o.contactName)  LIKE LOWER(CONCAT('%', :q, '%'))
-                          OR o.contactPhone        LIKE CONCAT('%', :q, '%'))
+        WHERE (:q = '' OR LOWER(o.contactEmail) LIKE LOWER(CONCAT('%', :q, '%'))
+                       OR LOWER(o.contactName)  LIKE LOWER(CONCAT('%', :q, '%'))
+                       OR o.contactPhone        LIKE CONCAT('%', :q, '%'))
         GROUP BY LOWER(o.contactEmail)
         ORDER BY MAX(o.createdAt) DESC
     """)

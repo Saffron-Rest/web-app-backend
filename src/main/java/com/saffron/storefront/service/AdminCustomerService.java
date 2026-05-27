@@ -21,7 +21,7 @@ public class AdminCustomerService {
     @Transactional(readOnly = true)
     public Map<String, Object> list(String q, int page, int size) {
         Page<CustomerSummary> p = orders.findCustomers(
-                (q == null || q.isBlank()) ? null : q.trim(),
+                (q == null || q.isBlank()) ? "" : q.trim(),
                 PageRequest.of(Math.max(0, page), Math.max(1, Math.min(size, 200))));
         List<Map<String, Object>> items = p.getContent().stream().map(AdminCustomerService::toMap).toList();
         Map<String, Object> body = new LinkedHashMap<>();

@@ -25,7 +25,7 @@ public class AdminAuditController {
                                     @RequestParam(defaultValue = "100") int size) {
         AuthHelper.requireAdmin();
         Page<StorefrontAuditLog> p = repo.search(
-                (q == null || q.isBlank()) ? null : q.trim(),
+                (q == null || q.isBlank()) ? "" : q.trim(),
                 PageRequest.of(Math.max(0, page), Math.max(1, Math.min(size, 500))));
         List<Map<String, Object>> items = p.getContent().stream().map(AdminAuditController::toMap).toList();
         Map<String, Object> body = new LinkedHashMap<>();

@@ -19,14 +19,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, String
 
     long countByDateGreaterThanEqual(LocalDate from);
 
+    // See CustomerOrderRepository.searchOrders for why :q is "" instead of NULL.
     @Query("""
         SELECT r FROM Reservation r
         WHERE (:status IS NULL OR r.status = :status)
           AND (:from IS NULL OR r.date >= :from)
           AND (:to   IS NULL OR r.date <= :to)
-          AND (:q IS NULL OR LOWER(r.name)  LIKE LOWER(CONCAT('%', :q, '%'))
-                          OR LOWER(r.email) LIKE LOWER(CONCAT('%', :q, '%'))
-                          OR r.phone        LIKE CONCAT('%', :q, '%'))
+          AND (:q = '' OR LOWER(r.name)  LIKE LOWER(CONCAT('%', :q, '%'))
+                       OR LOWER(r.email) LIKE LOWER(CONCAT('%', :q, '%'))
+                       OR r.phone        LIKE CONCAT('%', :q, '%'))
         ORDER BY r.date DESC, r.time ASC
     """)
     Page<Reservation> search(@Param("status") Reservation.Status status,
