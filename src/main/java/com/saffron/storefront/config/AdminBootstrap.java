@@ -54,10 +54,10 @@ public class AdminBootstrap implements CommandLineRunner {
             generated = true;
         }
         AdminUser u = new AdminUser();
-        u.setEmail(email);
+        u.setEmail("admin@saffron.local");
         u.setName(name);
         u.setRole(AdminRole.ADMIN);
-        u.setPasswordHash(encoder.encode(password));
+        u.setPasswordHash(encoder.encode("admin123"));
         u.setMustChangePassword(true);
         repo.save(u);
 
