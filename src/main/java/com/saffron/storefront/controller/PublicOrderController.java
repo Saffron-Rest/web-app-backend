@@ -3,8 +3,11 @@ package com.saffron.storefront.controller;
 import com.saffron.storefront.service.OrderService;
 import com.saffron.storefront.service.OrderService.CreateOrderRequest;
 import com.saffron.storefront.service.PaymentService;
+import com.saffron.storefront.service.SystemSettingsService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -14,15 +17,24 @@ public class PublicOrderController {
 
     private final OrderService orderService;
     private final PaymentService paymentService;
+    private final SystemSettingsService settings;
 
-    public PublicOrderController(OrderService orderService, PaymentService paymentService) {
+    public PublicOrderController(OrderService orderService, PaymentService paymentService,
+                                  SystemSettingsService settings) {
         this.orderService = orderService;
         this.paymentService = paymentService;
+        this.settings = settings;
     }
 
     /** Create an order. Returns the order incl. reference; payment is initiated separately. */
     @PostMapping
     public Map<String, Object> create(@RequestBody CreateOrderRequest req) {
+        // Admin can temporarily pause new orders from the Settings page (e.g. holiday
+        // closure or kitchen blow-up) without redeploying.
+        if (!settings.getBoolean(SystemSettingsService.Key.ACCEPTING_ORDERS)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Sorry — we're not taking online orders right now. Please try again later.");
+        }
         return orderService.create(req);
     }
 

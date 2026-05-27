@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,6 +33,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Map<String, Object>> forbidden(ForbiddenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> responseStatus(ResponseStatusException ex) {
+        String msg = ex.getReason() != null ? ex.getReason() : ex.getMessage();
+        return ResponseEntity.status(ex.getStatusCode()).body(error(msg));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

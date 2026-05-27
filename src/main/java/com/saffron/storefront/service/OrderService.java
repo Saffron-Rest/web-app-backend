@@ -271,6 +271,16 @@ public class OrderService {
         m.put("estimatedReadyAt", o.getEstimatedReadyAt() == null ? null : o.getEstimatedReadyAt().toString());
         m.put("estimatedDeliveryAt", o.getEstimatedDeliveryAt() == null ? null : o.getEstimatedDeliveryAt().toString());
 
+        // Payment block — surfaces Stripe IDs for the admin UI to link out to Stripe and
+        // optionally render "issued via Stripe" vs "manual / offline" pills.
+        Map<String, Object> payment = new LinkedHashMap<>();
+        payment.put("stripeSessionId", o.getStripeSessionId());
+        payment.put("stripePaymentIntent", o.getStripePaymentIntent());
+        payment.put("refundedAmount", o.getRefundedAmount());
+        payment.put("refundReference", o.getRefundReference());
+        payment.put("refundedAt", o.getRefundedAt() == null ? null : o.getRefundedAt().toString());
+        m.put("payment", payment);
+
         List<Map<String, Object>> evs = new ArrayList<>();
         if (events != null) {
             for (OrderEvent e : events) {

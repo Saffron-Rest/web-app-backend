@@ -40,8 +40,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ── public endpoints (everything the storefront UI calls anonymously) ──
-                        .requestMatchers(HttpMethod.GET,  "/api/catalog/**").permitAll()
+                            // ── public endpoints (everything the storefront UI calls anonymously) ──
+                            .requestMatchers(HttpMethod.GET,  "/api/storefront/info").permitAll()
+                            .requestMatchers(HttpMethod.GET,  "/api/catalog/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/quotes/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/orders/*").permitAll()

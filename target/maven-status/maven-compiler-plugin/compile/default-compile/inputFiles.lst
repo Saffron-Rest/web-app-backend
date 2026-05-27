@@ -8,12 +8,15 @@
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/AdminOrderController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/AdminProductController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/AdminReservationController.java
+/Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/AdminSettingsController.java
+/Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/AdminSystemController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/AdminUserController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/AuthController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/PublicCatalogController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/PublicOrderController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/PublicQuoteController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/PublicReservationController.java
+/Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/PublicStorefrontController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/controller/PublicUploadController.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/domain/AdminRole.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/domain/AdminUser.java
@@ -26,6 +29,7 @@
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/domain/Reservation.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/domain/ShipmentMethod.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/domain/StorefrontAuditLog.java
+/Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/domain/SystemSetting.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/repository/AdminUserRepository.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/repository/CustomerOrderRepository.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/repository/CustomerSummary.java
@@ -33,6 +37,7 @@
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/repository/ProductRepository.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/repository/ReservationRepository.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/repository/StorefrontAuditLogRepository.java
+/Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/repository/SystemSettingRepository.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/security/AuthHelper.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/security/AuthUser.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/security/ForbiddenException.java
@@ -44,6 +49,7 @@
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/AdminCustomerService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/AdminDashboardService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/AdminOrderService.java
+/Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/AdminPaymentService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/AdminReservationService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/AdminUserService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/AuthService.java
@@ -54,6 +60,7 @@
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/PaymentService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/ReservationService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/StorefrontAuditService.java
+/Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/SystemSettingsService.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/quotes/DeliveryMode.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/quotes/Geo.java
 /Users/ihakhverdiyev/Desktop/saffron-app/web-app-backend/src/main/java/com/saffron/storefront/service/quotes/MockQuote.java

@@ -132,6 +132,20 @@ public class CustomerOrder {
     @Column(name = "estimated_delivery_at")
     private Instant estimatedDeliveryAt;
 
+    // --- Refund tracking ---------------------------------------------------
+    // Populated by AdminPaymentService when a refund is issued (Stripe or
+    // manual offline). Total may be partial, e.g. only the delivery fee.
+
+    @Column(name = "refunded_amount", precision = 12, scale = 2)
+    private BigDecimal refundedAmount;
+
+    /** Stripe `re_xxx` refund id, or a synthetic id like `manual-...` for offline. */
+    @Column(name = "refund_reference", length = 200)
+    private String refundReference;
+
+    @Column(name = "refunded_at")
+    private Instant refundedAt;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderLine> lines = new ArrayList<>();
 
@@ -212,6 +226,12 @@ public class CustomerOrder {
     public void setEstimatedReadyAt(Instant estimatedReadyAt) { this.estimatedReadyAt = estimatedReadyAt; }
     public Instant getEstimatedDeliveryAt() { return estimatedDeliveryAt; }
     public void setEstimatedDeliveryAt(Instant estimatedDeliveryAt) { this.estimatedDeliveryAt = estimatedDeliveryAt; }
+    public BigDecimal getRefundedAmount() { return refundedAmount; }
+    public void setRefundedAmount(BigDecimal v) { this.refundedAmount = v; }
+    public String getRefundReference() { return refundReference; }
+    public void setRefundReference(String v) { this.refundReference = v; }
+    public Instant getRefundedAt() { return refundedAt; }
+    public void setRefundedAt(Instant v) { this.refundedAt = v; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

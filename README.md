@@ -167,15 +167,61 @@ restarts don't recreate or modify the account.
 | `POST /api/admin/orders/{ref}/status`     | ADMIN, MANAGER       | `{ status, message }`                       |
 | `POST /api/admin/orders/{ref}/cancel`     | ADMIN, MANAGER       | `{ reason }`                                |
 | `POST /api/admin/orders/{ref}/notes`      | ADMIN, MANAGER       | `{ message }` — appends to the timeline     |
+| `POST /api/admin/orders/{ref}/tracking`   | ADMIN, MANAGER       | Manually attach courier code + ETAs         |
+| `POST /api/admin/orders/{ref}/redispatch` | ADMIN, MANAGER       | Re-book the carrier (fresh code + ETAs)     |
+| `POST /api/admin/orders/{ref}/mark-paid`  | ADMIN, MANAGER       | `{ method, note }` — offline payments       |
+| `POST /api/admin/orders/{ref}/refund`     | ADMIN, MANAGER       | `{ amount, reason }` — Stripe or manual     |
 | `GET  /api/admin/reservations`            | any auth             |                                             |
 | `POST /api/admin/reservations/{id}/status`| ADMIN, MANAGER       |                                             |
 | `DELETE /api/admin/reservations/{id}`     | ADMIN, MANAGER       |                                             |
 | `GET  /api/admin/customers`               | any auth             | Aggregated from orders                      |
+| `GET  /api/admin/settings`                | any auth             | Storefront switches + banner snapshot       |
+| `PATCH /api/admin/settings`               | ADMIN                | Bulk update — partial JSON map              |
+| `GET  /api/admin/system/status`           | any auth             | Carriers, payments, DB, build info          |
 | `GET  /api/admin/users`                   | ADMIN                |                                             |
 | `POST /api/admin/users`                   | ADMIN                | Returns a one-time temporary password       |
 | `PATCH /api/admin/users/{id}`             | ADMIN                |                                             |
 | `POST /api/admin/users/{id}/reset-password`| ADMIN               | Returns a one-time temporary password       |
 | `GET  /api/admin/audit`                   | ADMIN                | Append-only log of admin actions            |
+
+### Runtime settings
+
+Operator-controlled knobs live in `system_settings` and are editable from the
+admin **Settings** page (ADMIN role). Changing a setting takes effect
+immediately — no redeploy needed.
+
+| Key                                  | Default | Notes                                                                          |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------------ |
+| `storefront.acceptingOrders`         | `true`  | When `false`, `POST /api/orders` returns 503 and the storefront shows a notice |
+| `storefront.acceptingReservations`   | `true`  | When `false`, `POST /api/reservations` returns 503                              |
+| `storefront.bannerMessage`           | `""`    | Free-text banner shown at the top of every storefront page                     |
+| `storefront.bannerTone`              | `info`  | `info` / `warning` / `success` — styles the banner                              |
+| `storefront.prepDelayMinutes`        | `0`     | Customer-facing minutes added to ETAs                                          |
+
+The public storefront pulls them from `GET /api/storefront/info`.
+
+### Payments & refunds
+
+`AdminPaymentService` handles two flows on top of the customer-facing Stripe
+checkout:
+
+- **Mark paid offline** — `POST /api/admin/orders/{ref}/mark-paid` flips a
+  `PENDING_PAYMENT` (or `FAILED`) order to `PAID` and dispatches delivery as
+  normal. The synthesised payment intent uses an `offline_<method>_<ts>` prefix
+  so the admin UI can render it distinctly from real Stripe payments.
+- **Refund** — `POST /api/admin/orders/{ref}/refund`. If Stripe is configured
+  (`STRIPE_SECRET_KEY` set) **and** the order's payment intent looks like a
+  real Stripe one, we call `POST /v1/refunds` and store the resulting `re_...`
+  id. Otherwise we record a manual refund (e.g. cash refund). Either way the
+  order transitions to the new `REFUNDED` status with an event explaining the
+  reason and the amount.
+
+### System status
+
+`GET /api/admin/system/status` returns the carrier-by-carrier live/mock state
+(from each `QuoteProvider#isLiveEnabled`), Stripe mode (`mock`/`live`), DB
+ping latency, JVM uptime, and the build version. The admin UI's **System
+status** page polls this every 15 s.
 
 ### Image uploads
 

@@ -2,6 +2,7 @@ package com.saffron.storefront.service;
 
 import com.saffron.storefront.domain.CustomerOrder;
 import com.saffron.storefront.domain.OrderStatus;
+import com.saffron.storefront.domain.ShipmentMethod;
 import com.saffron.storefront.repository.CustomerOrderRepository;
 import com.saffron.storefront.repository.OrderEventRepository;
 import com.saffron.storefront.web.BadRequestException;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +25,18 @@ public class AdminOrderService {
     private final CustomerOrderRepository orders;
     private final OrderEventRepository events;
     private final OrderService orderService;
+    private final DeliveryDispatchService dispatchService;
     private final StorefrontAuditService audit;
 
     public AdminOrderService(CustomerOrderRepository orders,
                              OrderEventRepository events,
                              OrderService orderService,
+                             DeliveryDispatchService dispatchService,
                              StorefrontAuditService audit) {
         this.orders = orders;
         this.events = events;
         this.orderService = orderService;
+        this.dispatchService = dispatchService;
         this.audit = audit;
     }
 
@@ -93,6 +99,61 @@ public class AdminOrderService {
         orderService.appendEvent(order, order.getStatus(), "Admin note: " + message.trim());
         audit.record("ORDER_NOTE", "CustomerOrder", order.getId(), message, http);
         return OrderService.toMap(order, events.findByOrderIdOrderByCreatedAtAsc(order.getId()));
+    }
+
+    /** Manually attach / overwrite tracking + ETA fields. Useful when a carrier was booked
+     * outside the storefront (phone call, retail dropoff) and the admin wants to surface
+     * the courier info on the order confirmation page. */
+    @Transactional
+    public Map<String, Object> updateTracking(String reference, String trackingCode,
+                                              String trackingUrl, String readyAtIso,
+                                              String deliveryAtIso, HttpServletRequest http) {
+        CustomerOrder order = orders.findByReference(reference)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+        if (trackingCode != null) order.setTrackingCode(blankToNull(trackingCode));
+        if (trackingUrl != null)  order.setTrackingUrl(blankToNull(trackingUrl));
+        if (readyAtIso != null)   order.setEstimatedReadyAt(parseInstant(readyAtIso));
+        if (deliveryAtIso != null) order.setEstimatedDeliveryAt(parseInstant(deliveryAtIso));
+        orders.save(order);
+        orderService.appendEvent(order, order.getStatus(),
+                "Tracking updated by admin",
+                order.getTrackingCode(), order.getTrackingUrl());
+        audit.record("ORDER_TRACKING", "CustomerOrder", order.getId(),
+                "reference=" + reference + ",code=" + order.getTrackingCode(), http);
+        return OrderService.toMap(order, events.findByOrderIdOrderByCreatedAtAsc(order.getId()));
+    }
+
+    /** Re-runs {@link DeliveryDispatchService#handlePayment} to generate fresh tracking +
+     * ETAs. Used when the original carrier failed and we need to rebook. */
+    @Transactional
+    public Map<String, Object> redispatch(String reference, HttpServletRequest http) {
+        CustomerOrder order = orders.findByReference(reference)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+        if (order.getStatus() == OrderStatus.CANCELLED || order.getStatus() == OrderStatus.REFUNDED) {
+            throw new BadRequestException("Cannot redispatch a " + order.getStatus().name() + " order");
+        }
+        if (order.getShipmentMethod() == ShipmentMethod.PICKUP) {
+            throw new BadRequestException("Pickup orders have no carrier to redispatch");
+        }
+        dispatchService.handlePayment(order);
+        audit.record("ORDER_REDISPATCH", "CustomerOrder", order.getId(),
+                "reference=" + reference + ",method=" + order.getShipmentMethod(), http);
+        return OrderService.toMap(order, events.findByOrderIdOrderByCreatedAtAsc(order.getId()));
+    }
+
+    private static Instant parseInstant(String iso) {
+        if (iso == null || iso.isBlank()) return null;
+        try {
+            return Instant.parse(iso.trim());
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException("Invalid ISO-8601 instant: " + iso);
+        }
+    }
+
+    private static String blankToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
     }
 
     private static OrderStatus parseStatus(String s) {
